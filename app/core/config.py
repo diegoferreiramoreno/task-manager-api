@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # Database
-    database_url: str = "postgresql://user:password@localhost:5432/taskmanager"
+    database_url: str = "postgresql://username:password@localhost:5432/dbname"
     
     model_config = SettingsConfigDict(
         env_file=".env",
