@@ -1,5 +1,4 @@
 """Task model definition."""
-from datetime import datetime, timezone
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 
 from app.db.session import Base

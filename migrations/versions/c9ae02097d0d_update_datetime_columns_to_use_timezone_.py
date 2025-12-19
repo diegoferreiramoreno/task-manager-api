@@ -38,9 +38,11 @@ def downgrade() -> None:
     op.alter_column('tasks', 'updated_at',
                existing_type=sa.DateTime(timezone=True),
                type_=postgresql.TIMESTAMP(),
-               existing_nullable=False)
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
     op.alter_column('tasks', 'created_at',
                existing_type=sa.DateTime(timezone=True),
                type_=postgresql.TIMESTAMP(),
-               existing_nullable=False)
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
     # ### end Alembic commands ###
