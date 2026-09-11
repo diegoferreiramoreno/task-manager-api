@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: FastAPI",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "main:app",  // Substitua 'main' pelo nome do seu arquivo .py principal
+                "--reload",
+                "--port",
+                "8000"
+            ],
+            "jinja": true, // Habilita debug de templates se usar Jinja2
+            "justMyCode": true // Igual ao "Just My Code" do Visual Studio (ignora bibliotecas externas)
+        }
+    ]
+}

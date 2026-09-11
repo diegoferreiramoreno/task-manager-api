@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: task-api
+    restart: always
+    ports:
+      - "8000:8000"
+    # Não precisa mais do 'depends_on' nem do serviço 'db'
+    environment:
+      # --- A MUDANÇA ESTÁ AQUI ---
+      # host.docker.internal = "O IP da minha máquina Windows"
+      # Ajuste o usuário (postgres) e senha (postgres) conforme o seu banco local
+      - DATABASE_URL=postgresql://postgres:1249@host.docker.internal:5432/taskdb
+    volumes:
+      - .:/app
