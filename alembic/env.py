@@ -3,7 +3,7 @@ import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import pool
+from sqlalchemy import pool, engine_from_config
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from dotenv import load_dotenv
@@ -17,7 +17,7 @@ load_dotenv()
 # 2. Importação dos Models
 # Certifique-se de que o import está correto para o seu arquivo database.py e models.py
 from database import Base, DATABASE_URL
-from models import Task # Importante importar os modelos para serem detectados
+from models import Task, Holiday  # Importante importar os modelos para serem detectados
 
 # Configuração do Alembic
 config = context.config
@@ -36,34 +36,34 @@ def do_run_migrations(connection: Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-# --- FUNÇÃO 2: Configura a Engine e Conexão (Assíncrono) ---
-async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-    """
-    
-    # PEGAR A CONFIGURAÇÃO E INJETAR A URL DO .ENV
-    configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")
-
-    connectable = async_engine_from_config(
-        configuration,
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-
-    async with connectable.connect() as connection:
-        # Chama a função síncrona dentro do contexto assíncrono
-        await connection.run_sync(do_run_migrations)
-
-    await connectable.dispose()
-
-# --- FUNÇÃO 3: Ponto de Entrada (Roda o Asyncio) ---
+# --- FUNÇÃO 2: Ponto de Entrada Online ---
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    
-    # Aqui usamos o asyncio.run para rodar a função async definida acima
-    asyncio.run(run_async_migrations())
+    url = os.getenv("DATABASE_URL", str(DATABASE_URL))
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = url
+
+    if "+asyncpg" in url or "+aiopg" in url:
+        async def run_async_migrations() -> None:
+            connectable = async_engine_from_config(
+                configuration,
+                prefix="sqlalchemy.",
+                poolclass=pool.NullPool,
+            )
+            async with connectable.connect() as connection:
+                await connection.run_sync(do_run_migrations)
+            await connectable.dispose()
+
+        asyncio.run(run_async_migrations())
+    else:
+        connectable = engine_from_config(
+            configuration,
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+        )
+        with connectable.connect() as connection:
+            do_run_migrations(connection)
+        connectable.dispose()
 
 if context.is_offline_mode():
     # Se fosse offline, rodaria aqui (geralmente não precisa mexer para esse caso)
